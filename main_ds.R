@@ -38,22 +38,22 @@ full_data<-droplevels(full_data)
 full_data<-full_data[,-1]
 
 
-# #Checking variable distribution
-# boxplot(full_data$LoanAmount[train_idx])
-# rm_loanamount_idx<-which(full_data$LoanAmount[train_idx]>420)
-# 
-# boxplot(full_data$ApplicantIncome[train_idx])
-# rm_ApplicantIncome_idx<-which(full_data$ApplicantIncome[train_idx]>25000)
-# 
-# boxplot(full_data$CoapplicantIncome[train_idx])
-# rm_CoApplicantIncome_idx<-which(full_data$CoapplicantIncome[train_idx]>10000)
-# 
-# rm_married_idx<-which(is.na(full_data$Married[train_idx]))
-# 
-# #removing outliers and missing values
-# rm_unique_idx<-unique(c(rm_ApplicantIncome_idx,rm_CoApplicantIncome_idx,rm_loanamount_idx,rm_married_idx))
-# length(rm_unique_idx)
-# full_data<-full_data[-rm_unique_idx,]
+#Checking variable distribution
+boxplot(full_data$LoanAmount[train_idx])
+rm_loanamount_idx<-which(full_data$LoanAmount[train_idx]>420)
+
+boxplot(full_data$ApplicantIncome[train_idx])
+rm_ApplicantIncome_idx<-which(full_data$ApplicantIncome[train_idx]>25000)
+
+boxplot(full_data$CoapplicantIncome[train_idx])
+rm_CoApplicantIncome_idx<-which(full_data$CoapplicantIncome[train_idx]>10000)
+
+rm_married_idx<-which(is.na(full_data$Married[train_idx]))
+
+#removing outliers and missing values
+rm_unique_idx<-unique(c(rm_ApplicantIncome_idx,rm_CoApplicantIncome_idx,rm_loanamount_idx,rm_married_idx))
+length(rm_unique_idx)
+full_data<-full_data[-rm_married_idx,]
 
 train_idx<-1:589
 test_idx<-590:956
@@ -89,7 +89,7 @@ loanamount.idx<-which(is.na(full_data$LoanAmount))
 loanamount.model<-lm(LoanAmount~ApplicantIncome+CoapplicantIncome+Education+Married,data=full_data[-loanamount.idx,-12])
 loanamount.pred<-predict(loanamount.model,full_data[loanamount.idx,-12])
 full_data$LoanAmount[loanamount.idx]<-loanamount.pred
-quantile(full_data$LoanAmount)
+
 
 
 #-------------   -------------------------------------------Prediction-------------------------------------------------------#
@@ -106,26 +106,5 @@ output<-cbind(test[1],Loan_Status=predict(rf.loan,full_data[test_idx,]))
 write.csv(output,"Sample_Submission.csv",row.names = FALSE)
 
 
-#bagging
-bag.loan =randomForest(Loan_Status~.,data=train_data_df_predictor ,
-                         mtry=7, importance =TRUE)
-output<-cbind(test_data[1],Loan_Status=predict(bag.loan,test_data_df))
-write.csv(output,"Sample_Submission.csv",row.names = FALSE)
 
-#Boosting
-full_data_temp<-full_data
-full_data_temp$Loan_Status<-ifelse(full_data_temp$Loan_Status=="Y",1,0)
-full_data_temp$Loan_Status<-as.factor(full_data_temp$Loan_Status)
-
-boost.loan =gbm(Loan_Status~.,data=full_data_temp[train_idx,],distribution= "bernoulli",n.trees =5000, interaction.depth =2,shrinkage =0.002)
-
-output<-cbind(test[1],Loan_Status=predict(boost.loan,full_data_temp[test_idx,],n.trees = 2000))
-
-#SVM
-svm.loan<-tune(svm,Loan_Status~.,
-                      data=full_data[train_idx,],kernal="linear",ranges = list(cost=c(1,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,2,2.5,3)))
-
-pred.loan_Status<-predict(svm.loan$best.model,full_data[test_idx,])
-output<-cbind(test[1],Loan_Status=pred.loan_Status)
-write.csv(output,"Sample_Submission.csv",row.names = FALSE)
 
