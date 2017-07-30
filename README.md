@@ -1,3 +1,3 @@
-main_ds.R contains all code.
+loan_pred.R contains all code.
 'data' folder contains test and train datasets.
-'Samplesubmission.csv' contains the predicted output
+'Sample_Submission.csv' contains the predicted output
